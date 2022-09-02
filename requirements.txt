@@ -1,6 +1,7 @@
 altair
 pandas
 streamlit
-yfinance
 sklearn
 requests
+zipfile
+io
