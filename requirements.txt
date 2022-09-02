@@ -3,4 +3,4 @@ pandas
 streamlit
 sklearn
 requests
-zipfile
+zipfile2
