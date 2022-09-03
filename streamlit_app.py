@@ -1,18 +1,14 @@
-from collections import namedtuple
 import altair as alt
-import math
 import pandas as pd
 import streamlit as st
-import yfinance as yf
-from sklearn import preprocessing
 import numpy as np
-import requests
+import requests, zipfile, io
+
 st.title("USDA Economic Reseach Service Feed Grains Dashboard")
 st.caption("This dashboard contains statistics on four feed grains (corn, grain sorghum, barley, and oats), foreign coarse grains (feed grains plus rye, millet, and mixed grains), hay, and related items. This includes data published in the monthly Feed Outlook and previously annual Feed Yearbook. Data are monthly, quarterly, and/or annual depending upon the data series. Latest data may be preliminary or projected. Missing values indicate unreported values, discontinued series, or not yet released data.")
-import pandas as pd
-import zipfile
+
 zip_file_url = "https://www.ers.usda.gov/webdocs/DataFiles/50048/FeedGrains.zip?v=7455.2"
-import requests, zipfile, io
+
 
 #import data
 r = requests.get(zip_file_url, stream=True)
