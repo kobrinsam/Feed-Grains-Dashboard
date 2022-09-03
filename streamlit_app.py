@@ -93,10 +93,27 @@ if len(attr) <1:
 else:
     chart_title =  "{} {}, {}".format(comm[0], attr[0], unit)
     st.subheader(chart_title)
-    st.line_chart(data = freq_df, x= 'Date', y='Amount')
+    chart = alt.Chart(freq_df).mark_line().encode(
+    x='Date',
+    y= alt.Y('Amount', title = "{}".format(unit)),
+    color='SC_Commodity_Desc')
+    st.altair_chart(chart, use_container_width=True)
 if len(attr) <1:
     table_title =  ""
 else:
+    @st.cache
+    def convert_df(df):
+         # IMPORTANT: Cache the conversion to prevent computation on every rerun
+         return df.to_csv().encode('utf-8')
+
+    csv = convert_df(freq_df)
+
+    st.download_button(
+         label="Download The Data as CSV",
+         data=csv,
+         file_name='feed_grains.csv',
+         mime='text/csv',
+     )
     table_title = "Data Table: {} {}".format(comm[0], attr[0])
     st.text(table_title)
     st.dataframe(freq_df[['Date', "Amount"]].set_index('Date'))
