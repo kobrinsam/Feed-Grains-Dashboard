@@ -5,6 +5,7 @@ import numpy as np
 import requests, zipfile, io
 from streamlit_lottie import st_lottie  # pip install streamlit-lottie
 import json
+import datetime as dt
 st.title("USDA Economic Reseach Service Feed Grains Dashboard")
 st.caption("This dashboard contains statistics on four feed grains (corn, grain sorghum, barley, and oats), foreign coarse grains (feed grains plus rye, millet, and mixed grains), hay, and related items. This includes data published in the monthly Feed Outlook and previously annual Feed Yearbook. Data are monthly, quarterly, and/or annual depending upon the data series. Latest data may be preliminary or projected. Missing values indicate unreported values, discontinued series, or not yet released data.")
 
@@ -47,16 +48,22 @@ with st.sidebar:
     df = df[df.SC_GeographyIndented_Desc == "United States"]
     group = st.multiselect('Group', list(df.SC_Group_Desc.unique()), default='Prices')
     df_group = df[df.SC_Group_Desc.isin(group)]
-    comm = st.multiselect('Commodity', list(df_group.SC_GroupCommod_Desc.unique()))
-    comm_group = df_group[df_group.SC_GroupCommod_Desc.isin(comm)]
-    attr = st.multiselect('Data Attribute', list(comm_group.SC_Attribute_Desc.unique()))
-    attr_df = comm_group[comm_group.SC_Attribute_Desc.isin(attr)]
-    dateFreq = st.radio('Frequency', list(attr_df.SC_Frequency_Desc.unique()))
   
-    freq_df = attr_df[attr_df.SC_Frequency_Desc == dateFreq]
+    attr = st.multiselect('Data Attribute', list(df_group.SC_Attribute_Desc.unique()))
+    attr_df = df_group[df_group.SC_Attribute_Desc.isin(attr)]
+    comm = st.multiselect('Commodity', list(attr_df.SC_Commodity_Desc.unique()))
+    comm_df= attr_df[attr_df.SC_Commodity_Desc.isin(comm)]
+    dateFreq = st.radio('Frequency', list(comm_df.SC_Frequency_Desc.unique()))
+    freq_df = comm_df[comm_df.SC_Frequency_Desc == dateFreq]
+
+    comm_str = " "
+    comm_delim = np.where(len(comm)>1,", ", " ")
+    for c in enumerate(comm):
+       comm_str =  comm_str + c[1] +  str(np.where(c[0]>-1,", ", " "))
+
 #filters
 unit = np.where(len(freq_df.SC_Unit_Desc.unique())<1,"", freq_df.SC_Unit_Desc.min())
-if len(attr) <1:
+if len(comm) <1:
     chart_title =  "<<< Select Data of Interest From the Sidebar To Get Started"
     st.subheader(chart_title)
     ###lottefile
@@ -91,14 +98,14 @@ if len(attr) <1:
     )
 
 else:
-    chart_title =  "{} {}, {}".format(comm[0], attr[0], unit)
+    chart_title =  "{}: {} {}".format(attr[0], comm_str , unit)
     st.subheader(chart_title)
     chart = alt.Chart(freq_df).mark_line().encode(
     x='Date',
     y= alt.Y('Amount', title = "{}".format(unit)),
     color='SC_Commodity_Desc')
     st.altair_chart(chart, use_container_width=True)
-if len(attr) <1:
+if len(comm) <1:
     table_title =  ""
 else:
     @st.cache
@@ -114,10 +121,15 @@ else:
          file_name='feed_grains.csv',
          mime='text/csv',
      )
-    table_title = "Data Table: {} {}".format(comm[0], attr[0])
+    table_title = "Data Table: {}: {}".format(attr[0] , unit)
     st.text(table_title)
-    st.dataframe(freq_df[['Date', "Amount"]].set_index('Date'))
+    displaytable =  freq_df[['Date', "Amount", "SC_Commodity_Desc"]]
+    displaytable = displaytable.set_index("Date")
+    
 
+    displaytable = pd.pivot_table(displaytable, values = 'Amount', index= 'Date', columns = 'SC_Commodity_Desc')
+    displaytable.index = displaytable.index.strftime("%b-%Y")
+    st.dataframe(displaytable)
 ##footer
 st.text('Data Sources: Feed Grains: Yearbook Table, USDA Economic Reseach Service')
 st.text('By Sam Kobrin')
