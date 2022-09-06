@@ -103,7 +103,8 @@ else:
     chart = alt.Chart(freq_df).mark_line().encode(
     x='Date',
     y= alt.Y('Amount', title = "{}".format(unit)),
-    color='SC_Commodity_Desc')
+    color='SC_Commodity_Desc',
+    strokeDash='SC_Commodity_Desc')
     st.altair_chart(chart, use_container_width=True)
 if len(comm) <1:
     table_title =  ""
