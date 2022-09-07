@@ -6,7 +6,6 @@ import requests, zipfile, io
 from streamlit_lottie import st_lottie  # pip install streamlit-lottie
 import json
 import datetime as dt
-import plotly.graph_objects as go
 st.title("USDA Economic Reseach Service Feed Grains Dashboard")
 st.caption("This dashboard contains statistics on four feed grains (corn, grain sorghum, barley, and oats), foreign coarse grains (feed grains plus rye, millet, and mixed grains), hay, and related items. This includes data published in the monthly Feed Outlook and previously annual Feed Yearbook. Data are monthly, quarterly, and/or annual depending upon the data series. Latest data may be preliminary or projected. Missing values indicate unreported values, discontinued series, or not yet released data.")
 
