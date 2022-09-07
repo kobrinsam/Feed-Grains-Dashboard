@@ -6,6 +6,7 @@ import requests, zipfile, io
 from streamlit_lottie import st_lottie  # pip install streamlit-lottie
 import json
 import datetime as dt
+import plotly.graph_objects as go
 st.title("USDA Economic Reseach Service Feed Grains Dashboard")
 st.caption("This dashboard contains statistics on four feed grains (corn, grain sorghum, barley, and oats), foreign coarse grains (feed grains plus rye, millet, and mixed grains), hay, and related items. This includes data published in the monthly Feed Outlook and previously annual Feed Yearbook. Data are monthly, quarterly, and/or annual depending upon the data series. Latest data may be preliminary or projected. Missing values indicate unreported values, discontinued series, or not yet released data.")
 
@@ -54,7 +55,7 @@ with st.sidebar:
     comm = st.multiselect('Commodity', list(attr_df.SC_Commodity_Desc.unique()))
     comm_df= attr_df[attr_df.SC_Commodity_Desc.isin(comm)]
     dateFreq = st.radio('Frequency', list(comm_df.SC_Frequency_Desc.unique()))
-    freq_df = comm_df[comm_df.SC_Frequency_Desc == dateFreq]
+    freq_df = comm_df[comm_df.SC_Frequency_Desc == dateFreq].rename(columns={"SC_Commodity_Desc":"Commodity"})
 
     comm_str = " "
     comm_delim = np.where(len(comm)>1,", ", " ")
@@ -103,8 +104,9 @@ else:
     chart = alt.Chart(freq_df).mark_line().encode(
     x='Date',
     y= alt.Y('Amount', title = "{}".format(unit)),
-    color='SC_Commodity_Desc',
-    strokeDash='SC_Commodity_Desc')
+    color='Commodity',
+    strokeDash='Commodity',
+    tooltip=['Commodity', 'Amount', 'SC_Unit_Desc', 'Date']).interactive()
     st.altair_chart(chart, use_container_width=True)
 if len(comm) <1:
     table_title =  ""
@@ -124,13 +126,17 @@ else:
      )
     table_title = "Data Table: {}: {}".format(attr[0] , unit)
     st.text(table_title)
-    displaytable =  freq_df[['Date', "Amount", "SC_Commodity_Desc"]]
+    displaytable =  freq_df[['Date', "Amount", "Commodity"]]
     displaytable = displaytable.set_index("Date")
     
+    displaytable["Amount"] =  displaytable["Amount"].round(0)
+   
+    
 
-    displaytable = pd.pivot_table(displaytable, values = 'Amount', index= 'Date', columns = 'SC_Commodity_Desc')
+    displaytable = pd.pivot_table(displaytable, values = 'Amount', index= 'Date', columns = 'Commodity')
     displaytable.index = displaytable.index.strftime("%b-%Y")
-    st.dataframe(displaytable)
+
+    st.dataframe(displaytable.style.set_precision(0))
 ##footer
 st.text('Data Sources: Feed Grains: Yearbook Table, USDA Economic Reseach Service')
 st.text('By Sam Kobrin')
