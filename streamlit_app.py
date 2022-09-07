@@ -137,7 +137,7 @@ else:
 
     st.dataframe(displaytable.style.set_precision(0))
 ##footer
-st.text('Data Sources: Feed Grains: Yearbook Table, USDA Economic Reseach Service')
+st.write("Data Sources: [Feed Grains: Yearbook Table, USDA Economic Reseach Service](https://www.ers.usda.gov/data-products/feed-grains-database)")
 st.text('By Sam Kobrin')
 
 
